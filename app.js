@@ -13,8 +13,9 @@ app.use(cookieParser());
 
 
 app.get('/hi', (req, res) => {
+  console.log(req.headers);
     const data = {
-        message: 'Success!!'
+        message: `success ${req.headers.username}!`
     }
     res.json(data);
 });
@@ -63,8 +64,8 @@ app.post("/login", (req, res) => {
                 // req.session.stdid = req.body.id;
                 try {
                   const accessToken = jwt.sign({
-                    id: foundData.username,
-                    name: foundData.username,
+                    id: foundData.id,
+                    username: foundData.username,
                   }, "accesstoken", {
                     expiresIn: '1h',
                     issuer: "About Tech",
@@ -77,7 +78,7 @@ app.post("/login", (req, res) => {
                   return res.status(200).json({message: 'success'});
                 } catch (error) {
                     console.log(error);
-                  return res.status(201).send(error);
+                  return res.status(404).send(error);
                 }
                 
               }
