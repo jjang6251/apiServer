@@ -7,9 +7,20 @@ const jwt = require('jsonwebtoken');
 const cookieParser = require("cookie-parser");
 const bcrypt = require('bcrypt');
 
+//카카오
+const cors = require("cors");
+const origin = "http://localhost:5500";
+const qs = require("qs");
+const axios = require('axios');
+
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
+
+app.use(cors({
+  origin: ['http://127.0.0.1:5500', 'https://kauth.kakao.com/'],
+  credentials: true
+}));
 
 
 app.get('/hi', (req, res) => {
@@ -95,5 +106,84 @@ app.post("/login", (req, res) => {
         })
   
   });
+
+// app.get("/kakao", async(req, res) => {
+
+//  console.log(req.query.code);
+
+//  const config = {
+//   client_id: "6475f239d447f466561f37e9e5549289",
+//   grant_type: "authorization_code",
+//   redirect_uri: "http://localhost:4002/users/kakao/finish",
+//   code: req.query.code,
+//   };
+
+//   const data = querystring.stringify(config);
+
+//   const kakaoTokenRequest = await axios.post("https://kauth.kakao.com/oauth/token", data, {
+//       headers: {
+//         'Content-Type': 'application/x-www-form-urlencoded'
+//       }
+//   });
+
+//   console.log(kakaoTokenRequest.data.access_token);
+// })
+
+const client_id = "b8b39c15be3887fed1e10d34636e2447";
+const redirect_uri = "http://localhost:8000/kakao";
+const token_uri = "https://kauth.kakao.com/oauth/token";
+const api_host = "https://kapi.kakao.com";
+const client_secret = "";
+
+app.get("/authorize", function (req, res) {
+  let {scope} = req.query;
+  let scopeParam = "";
+  if (scope) {
+      scopeParam = "&scope=" + scope;
+  }
+  console.log(scopeParam);
+  res
+      .status(302)
+      .redirect(
+          `https://kauth.kakao.com/oauth/authorize?client_id=${client_id}&redirect_uri=${redirect_uri}&response_type=code${scopeParam}`
+      );
+
+  // axios.post(`https://kauth.kakao.com/oauth/authorize?client_id=${client_id}&redirect_uri=${redirect_uri}&response_type=code${scopeParam}`)
+  // .then((res) =>{
+  //   return res
+  // })
+});
+
+async function call(method, uri, param, header) {
+  try {
+      rtn = await axios({
+          method: method,
+          url: uri,
+          headers: header,
+          data: param,
+      });
+  } catch (err) {
+      rtn = err.response;
+  }
+  return rtn.data;
+}
+
+app.get("/kakao", async function (req, res) {
+  const param = qs.stringify({
+      grant_type: "authorization_code",
+      client_id: client_id,
+      redirect_uri: redirect_uri,
+      // client_secret: client_secret,
+      code: req.query.code,
+  });
+  const header = {"content-type": "application/x-www-form-urlencoded"};
+  var rtn = await call("POST", token_uri, param, header);
+  console.log(rtn.access_token);
+  // req.session.key = rtn.access_token;
+  // res.status(302).redirect(`${origin}/demo.html`);
+  // res.cookie("accessToken", rtn.access_token);
+  res.json({"token" : rtn.access_token});
+});
+
 
 module.exports = app;
