@@ -179,7 +179,7 @@ app.get("/kakao", async function (req, res) {
   const header = {"content-type": "application/x-www-form-urlencoded"};
   var rtn = await call("POST", token_uri, param, header);
   console.log(rtn.access_token);
-  // req.session.key = rtn.access_token;
+  // req.session.key = rtn.access_token;                                                                                                                      
   // res.status(302).redirect(`${origin}/demo.html`);
   // res.cookie("accessToken", rtn.access_token);
   res.json({"token" : rtn.access_token});
