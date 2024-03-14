@@ -27,6 +27,7 @@ app.get('/hi', (req, res) => {
   console.log(req.headers);
     const data = {
         message: `success ${req.headers.username}!`
+        // message: `success sungWon!`
     }
     res.json(data);
 });
